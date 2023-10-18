@@ -69,8 +69,9 @@ x_test = []
 for x in range(predict_days, len(model_inputs)):
     x_test.append(model_inputs[x-predict_days:x, 0])
 
+
 x_test = np.array(x_test)
-x_test = np.reshape(x_test, (x_test.shape[0], x_test.shape[1], 1))
+x_test = np.reshape(x_test, (x_test.shape[0], x_test.shape[1]))
 
 predicted_prices = model.predict(x_test)
 predicted_prices = scaler.inverse_transform(predicted_prices)
