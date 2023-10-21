@@ -11,11 +11,11 @@ from keras.models import Sequential
 from keras.layers import Dense, Dropout, LSTM
 
 # Load Data
-company = 'TATAPOWER'
+company = 'GCZ23.CMX'
 yf.pdr_override()
-y_simbols = ['TATAPOWER.NS']
-start = datetime(2012, 1, 1)
-end = datetime(2020, 1, 1)
+y_simbols = ['GCZ23.CMX']
+start = datetime(2015, 1, 1)
+end = datetime(2023, 1, 1)
 
 data = yf.download(y_simbols, start=start, end=end)
 
@@ -42,7 +42,7 @@ model.add(LSTM(units=50, return_sequences=True, input_shape=(x_train.shape[1], 1
 model.add(Dropout(0.2))
 model.add(LSTM(units=50, return_sequences=True))
 model.add(Dropout(0.2))
-model.add(LSTM(units=50, return_sequences=True))
+model.add(LSTM(units=50))
 model.add(Dropout(0.2))
 model.add(Dense(units=1))  # Prediction on the next closing day
 
@@ -50,7 +50,7 @@ model.compile(optimizer='adam', loss='mean_squared_error')
 model.fit(x_train, y_train, epochs=25, batch_size=32)
 
 ''' Test The Model Accuracy on Existing Data'''
-test_start = datetime(2020, 1, 1)
+test_start = datetime(2023, 1, 1)
 test_end = datetime.now()
 
 test_data = yf.download(y_simbols, start=test_start, end=test_end)
@@ -71,9 +71,10 @@ for x in range(predict_days, len(model_inputs)):
 
 
 x_test = np.array(x_test)
-x_test = np.reshape(x_test, (x_test.shape[0], x_test.shape[1]))
+x_test = np.reshape(x_test, (x_test.shape[0], x_test.shape[1], 1))
 
 predicted_prices = model.predict(x_test)
+
 predicted_prices = scaler.inverse_transform(predicted_prices)
 
 # Plot The Test Predictions
@@ -84,3 +85,13 @@ plt.xlabel('Time')
 plt.ylabel(f"{company} Share price")
 plt.legend()
 plt.show()
+
+# Next Day Prediction
+
+real_data = [model_inputs[len(model_inputs) + 1 - predict_days:len(model_inputs + 1), 0]]
+real_data = np.array(real_data)
+real_data = np.reshape(real_data, (real_data.shape[0], real_data.shape[1], 1))
+
+prediction = model.predict(real_data)
+prediction = scaler.inverse_transform(prediction)
+print(f"Prediction: {prediction}")
